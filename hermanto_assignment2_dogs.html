@@ -1,0 +1,89 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="hermanto_assignment2_css_inst377.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-slider/1.0.0/simpleslider.min.js"></script>
+    </head>
+    <body>
+        <nav id="nav-bar">
+            <a href="hermanto_assignment2_inst377.html" class="nav-tab">Home</a>
+            <a href="hermanto_assignment2_js_stocks_inst377.html" class="nav-tab">Stocks</a>
+            <a href="hermanto_assignment2_dogs.html" class="nav-tab">Dogs</a>
+        </nav>
+        <div id="buttonsDiv">
+            <div id="dogFactsDiv"></div>
+        </div>
+        <div id="carousel" style="width:612px; height:612px" data-simple-slider>
+
+        </div>
+        <button id="previous"><</button>
+        <button id="next">></button>
+        <script>
+            function dogFacts() {
+                const dogData = [];
+                fetch(`https://dogapi.dog/api/v2/breeds`)
+                    .then((result) => result.json())
+                    .then((resultJson) => {
+                        console.log(resultJson);
+                        
+                        const buttonsDiv = document.getElementById("buttonsDiv");
+                        resultJson.data.forEach((dog) => {
+                            const dogName = document.createElement("button");
+
+                            dogName.innerHTML = dog.attributes.name;
+                            dogName.className = "button-27";
+
+                            buttonsDiv.append(dogName);
+                            
+                            dogName.addEventListener("click", () => {
+                                showDogFacts(dog);
+                            });
+                        })
+                })
+            }
+            dogFacts();
+
+            function showDogFacts(dog) {
+                const dogFactsDiv = document.getElementById("dogFactsDiv");
+                dogFactsDiv.innerHTML = "";
+                const dogInformation = document.createElement("p");
+                dogInformation.innerHTML = `
+                Name: ${dog.attributes.name}
+                </br>Description: ${dog.attributes.description}
+                </br> Maximum life: ${dog.attributes.life.max}
+                </br> Minimum life: ${dog.attributes.life.min}`;
+                dogFactsDiv.append(dogInformation);
+            }
+
+            function randomDogs() {
+                const carousel = document.getElementById("carousel");
+                fetch(`https://dog.ceo/api/breeds/image/random/10`)
+                    .then((result) => result.json())
+                    .then((resultJson) => {
+                        console.log("dog images", resultJson);
+                        resultJson.message.forEach((image) => {
+                            const dogImg = document.createElement("img");
+                            dogImg.src = image;
+                            carousel.appendChild(dogImg)
+                        })
+                    // simpleslider.getSlider();
+                    const slider = simpleslider.getSlider({
+                        container: carousel,
+                        prop: "left",
+                        init: -612,
+                        show: 0,
+                        end: 612,
+                        unit: "px",
+                        duration: 0
+                    });
+                    document.getElementById("previous").onclick = function () {
+                        slider.prev();
+                    document.getElementById("next").onclick = function () {
+                        slider.next();
+                    }
+                };
+            });
+        }
+            randomDogs();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,198 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="hermanto_assignment2_css_inst377.css">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    </head>
+    <body>
+        <nav id="nav-bar">
+            <a href="hermanto_assignment2_inst377.html" class="nav-tab">Home</a>
+            <a href="hermanto_assignment2_js_stocks_inst377.html" class="nav-tab">Stocks</a>
+            <a href="hermanto_assignment2_dogs.html" class="nav-tab">Dogs</a>
+        </nav>
+        <h1>Let's chart some stocks!</h1>
+        <input id="ticker" type="text">
+        <select id="time">
+            <option value="30">30 Days</option>
+            <option value="60">60 Days</option>
+            <option value="90">90 Days</option>
+        </select>
+        <button onclick="populateChart()">Look up!</button>
+        <div>
+            <canvas id="stocksChart"></canvas>
+          </div>
+        <table id="stocks-table">
+            <tr>
+                <th>Ticker</th>
+                <th>Comment Count</th>
+                <th>Sentiment</th>
+            </tr>
+        </table>
+        <script>
+            let chartExists = null;
+            async function getChartData() {
+                const time = document.getElementById("time").value;
+                // Get full current date
+                const date = new Date();
+                // Get year, month, date
+                let currentYear = date.getFullYear();
+
+                var currentMonth = date.getMonth() + 1;
+                currentMonth = String(currentMonth).padStart(2, "0");
+
+                let currentDay = date.getDate();
+                currentDay = String(currentDay).padStart(2, "0");
+
+                let currentDate = `${currentYear}-${currentMonth}-${currentDay}`;
+
+                // Calculate the first date
+                start = date.setDate(currentDay - time);
+                // Get year, month, date
+                let startYear = date.getFullYear();
+
+                let startMonth = date.getMonth() + 1;
+                startMonth = String(startMonth).padStart(2, "0");
+
+                let startDay = date.getDate();
+                startDay = String(startDay).padStart(2, "0");
+
+                let startDate = `${startYear}-${startMonth}-${startDay}`;
+
+                console.log("this is currentDate", currentDate);
+                console.log("this is startDate", startDate);
+                
+                // Get current date again - this time for days
+                const daysCurrentDate = new Date(currentDate);
+                console.log("this is daysCurrentDate",daysCurrentDate);
+
+                const daysStartDate = new Date(startDate); 
+                console.log("this is daysStartDate", daysStartDate);
+
+                const days = [];
+                while (daysStartDate <= daysCurrentDate) {
+                    let daysYear = daysStartDate.getFullYear();
+                    let daysMonth = daysStartDate.getMonth() + 1;
+                    daysMonth = String(daysMonth).padStart(2, "0");
+                    let daysDay = daysStartDate.getDate();
+                    daysDay = String(daysDay).padStart(2, "0");
+
+                    singleDay = `${daysYear}-${daysMonth}-${daysDay}`;
+                    days.push(singleDay);
+                    
+                    // Add date by one until it equals daysCurrentDate
+                    daysStartDate.setDate(daysStartDate.getDate() + 1);
+                }
+                const ticker = document.getElementById("ticker").value;
+                
+                const chartData = await fetch(`https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${startDate}/${currentDate}?adjusted=true&sort=asc&limit=120&apiKey=zByueoqeiWbpHmxQO6OoHRpev7jlv73c`).then((result) =>
+                    result.json());
+                    console.log("this is chart data:", chartData);
+
+                    const daysData = [];
+                    chartData.results.forEach((dayData) => {
+                        console.log("this is dayData c", dayData.c);
+                        daysData.push(dayData.c);
+                    })
+                return {daysData, days};
+            }
+            async function populateChart() {
+                const ctx = document.getElementById('stocksChart');
+
+                const {daysData, days} = await getChartData();
+
+                if (chartExists !== null) {
+                    chartExists.destroy();
+                }
+
+                chartExists = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: days,
+                    datasets: [{
+                    label: "Stock prices",
+                    data: daysData,
+                    borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                    }
+                }
+                });
+            }
+            function stocksTable() {
+                fetch(`https://tradestie.com/api/v1/apps/reddit?date=2022-04-03`)
+                    .then((result) => result.json())
+                    .then((resultJson) => {
+                        console.log(Array.isArray(resultJson));
+                        console.log(resultJson)
+                        console.log(resultJson.slice(0,5));
+                        const stocksTable = document.getElementById("stocks-table");
+                        counter = 0
+                        while (counter < 5) {
+                            const tableRow = document.createElement("tr");
+                            const tickerColumn = document.createElement("td");
+                            const commentColumn = document.createElement("td");
+                            const sentimentColumn = document.createElement("td");
+
+                            commentColumn.innerHTML = resultJson[counter].no_of_comments;
+
+                            if (resultJson[counter].sentiment == "Bearish") {
+                                const bearish = document.createElement("img");
+                                bearish.src = "https://static.thenounproject.com/png/3328203-200.png";
+                                sentimentColumn.appendChild(bearish);
+                            }
+                            else {
+                                const bullish = document.createElement("img");
+                                bullish.src = "https://static.thenounproject.com/png/3328202-200.png";
+                                sentimentColumn.appendChild(bullish);
+                            }
+
+                            if (resultJson[counter].ticker == "GME") {
+                                const gme = document.createElement("a");
+                                gme.href = "https://finance.yahoo.com/quote/GME/";
+                                gme.textContent = "GME";
+                                tickerColumn.appendChild(gme);
+                            }
+                            else if (resultJson[counter].ticker == "AMC") {
+                                const amc = document.createElement("a");
+                                amc.href = "https://finance.yahoo.com/quote/AMC/";
+                                amc.textContent = "AMC";
+                                tickerColumn.appendChild(amc);
+                            }
+                            else if (resultJson[counter].ticker == "TSLA") {
+                                const tsla = document.createElement("a");
+                                tsla.href = "https://finance.yahoo.com/quote/TSLA/";
+                                tsla.textContext = "TSLA";
+                                tickerColumn.appendChild(tsla);
+                            }
+                            else if (resultJson[counter].ticker == "WISH") {
+                                const wish = document.createElement("a");
+                                wish.href = "https://finance.yahoo.com/quote/WISH/";
+                                wish.textContent = "WISH";
+                                tickerColumn.appendChild(wish);
+                            }
+                            else if (resultJson[counter].ticker == "QQQ") {
+                                const qqq = document.createElement("a");
+                                qqq.href = "https://finance.yahoo.com/quote/QQQ";
+                                qqq.textContent = "QQQ";
+                                tickerColumn.appendChild(qqq);
+                            }
+
+                            tableRow.appendChild(tickerColumn);
+                            tableRow.appendChild(commentColumn);
+                            tableRow.appendChild(sentimentColumn);
+
+                            stocksTable.append(tableRow);
+                            counter ++;
+                    }
+
+                    })
+            }
+            stocksTable();
+            window.onload = populateChart;
+        </script>
+    </body>
+</html>
