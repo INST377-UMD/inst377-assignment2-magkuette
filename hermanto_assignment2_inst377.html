@@ -1,0 +1,48 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="hermanto_assignment2_css_inst377.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
+    </head>
+    <body>
+        <nav id="nav-bar">
+            <a href="hermanto_assignment2_inst377.html" class="nav-tab">Home</a>
+            <a href="hermanto_assignment2_js_stocks_inst377.html" class="nav-tab">Stocks</a>
+            <a href="hermanto_assignment2_dogs.html" class="nav-tab">Dogs</a>
+        </nav>
+        <div id="container">
+            <a href="hermanto_assignment2_js_stocks_inst377.html">
+                <button class="button-28" role="button">Stocks</button>
+            </a>
+            <a href="hermanto_assignment2_dogs.html">
+                <button class="button-28" role="button">Dogs</button>
+            </a>
+        </div>
+        <div id="quote-container">
+            <h3>Quote of the Page</h3>
+            <p id="quote"></p>
+        </div>
+        <script>
+            if (annyang) {
+                const commands = {
+                    'hello': () => { alert('Hello world!'); }
+                };
+
+                annyang.addCommands(commands);
+
+                annyang.start();
+                }
+            const api_url ="https://zenquotes.io/api/quotes/";
+
+            async function getapi(url) {
+                const response = await fetch(url);
+                var data = await response.json();
+                console.log(Array.isArray(data));
+                const quote = data[0].q;
+                document.getElementById("quote").innerHTML = quote;
+            }
+            getapi(api_url);
+
+        </script>
+    </body>
+</html>
+
